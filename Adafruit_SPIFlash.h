@@ -5,11 +5,11 @@
 
 //#define DEBUG
 #ifdef DEBUG
-# define SPIFL_DEBUG_PRINT(...) Serial.print(__VA_ARGS__)
-# define SPIFL_DEBUG_PRINTLN(...) Serial.println(__VA_ARGS__)
+# define DEBUG_PRINT(...) Serial.print(__VA_ARGS__)
+# define DEBUG_PRINTLN(...) Serial.println(__VA_ARGS__)
 #else
-# define SPIFL_DEBUG_PRINT(...) do {} while (0)
-# define SPIFL_DEBUG_PRINTLN(...) do {} while (0)
+# define DEBUG_PRINT(...) do {} while (0)
+# define DEBUG_PRINTLN(...) do {} while (0)
 #endif
 
 #if ARDUINO >= 100
@@ -88,6 +88,7 @@ typedef enum
   SPIFLASHTYPE_W25X40CL,
   SPIFLASHTYPE_AT25SF041,
   SPIFLASHTYPE_W25Q64,
+  SPIFLASHTYPE_W25Q80,
 } spiflash_type_t;
 
 class Adafruit_SPIFlash  : public Print {
@@ -120,7 +121,7 @@ class Adafruit_SPIFlash  : public Print {
   uint32_t WritePage (uint32_t address, const uint8_t *buffer, uint32_t len, bool fastquit=false);
 
   // Write an arbitrary-sized buffer
-  virtual uint32_t writeBuffer (uint32_t address, uint8_t *buffer, uint32_t len);
+  uint32_t writeBuffer (uint32_t address, const uint8_t *buffer, uint32_t len);
   uint32_t findFirstEmptyAddr(void);
   void seek(uint32_t);
   size_t write(uint8_t b);
