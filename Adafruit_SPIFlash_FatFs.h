@@ -34,15 +34,15 @@ class Adafruit_SPIFlash_FatFs;
 #define FILE_WRITE (FA_READ | FA_WRITE | FA_OPEN_APPEND)
 
 
-class File : public Stream {
+class XFile : public Stream {
 public:
-  File():
+  XFile():
     _opened(false), _file({0}), _fileInfo({0}), _directory({0}), _dirPath(NULL),
     _fatfs(NULL)
   {}
-  File(const char* filepath, uint8_t mode = FILE_READ,
+  XFile(const char* filepath, uint8_t mode = FILE_READ,
        Adafruit_SPIFlash_FatFs* fatfs = NULL);
-  virtual ~File() {
+  virtual ~XFile() {
     // Free directory path member memory if it was set.
     if (_dirPath != NULL) {
       free(_dirPath);
@@ -72,7 +72,7 @@ public:
   bool isDirectory() {
     return (_fileInfo.fattrib & AM_DIR) > 0;
   }
-  File openNextFile(uint8_t mode = (FA_READ | FA_OPEN_EXISTING));
+  XFile openNextFile(uint8_t mode = (FA_READ | FA_OPEN_EXISTING));
   void rewindDirectory();
 
   using Print::write;
@@ -113,8 +113,8 @@ public:
 
   // Functions that are similar to the Arduino SD library:
   bool begin();
-  ::File open(const char *filename, uint8_t mode = FILE_READ);
-  ::File open(const String &filename, uint8_t mode = FILE_READ) {
+  ::XFile open(const char *filename, uint8_t mode = FILE_READ);
+  ::XFile open(const String &filename, uint8_t mode = FILE_READ) {
     return open( filename.c_str(), mode );
   }
   bool exists(const char *filepath);

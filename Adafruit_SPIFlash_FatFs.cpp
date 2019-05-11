@@ -61,7 +61,7 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t
     buf[15] = num_blocks >> 24;
 }
 
-File::File(const char* filepath, uint8_t mode, Adafruit_SPIFlash_FatFs* fatfs):
+XFile::XFile(const char* filepath, uint8_t mode, Adafruit_SPIFlash_FatFs* fatfs):
   _opened(false), _file({0}), _fileInfo({0}), _directory({0}), _dirPath(NULL),
   _fatfs(fatfs)
 {
@@ -114,7 +114,7 @@ File::File(const char* filepath, uint8_t mode, Adafruit_SPIFlash_FatFs* fatfs):
   _opened = true;
 }
 
-size_t File::write(const uint8_t *buf, size_t size) {
+size_t XFile::write(const uint8_t *buf, size_t size) {
   activate();
   UINT bw = 0;
   if (f_write(&_file, buf, size, &bw) != FR_OK) {
@@ -124,7 +124,7 @@ size_t File::write(const uint8_t *buf, size_t size) {
   return bw;
 }
 
-int File::read() {
+int XFile::read() {
   activate();
   UINT br = 0;
   uint8_t buff[1] = {0};
@@ -139,7 +139,7 @@ int File::read() {
   return buff[0];
 }
 
-int File::peek() {
+int XFile::peek() {
   activate();
   int c = read();
   if (c != -1) {
@@ -148,17 +148,17 @@ int File::peek() {
   return c;
 }
 
-int File::available() {
+int XFile::available() {
   uint32_t n = size() - position();
   return n > 0X7FFF ? 0X7FFF : n;
 }
 
-void File::flush() {
+void XFile::flush() {
   activate();
   f_sync(&_file);
 }
 
-int File::read(void *buf, uint16_t nbyte) {
+int XFile::read(void *buf, uint16_t nbyte) {
   activate();
   UINT br = 0;
   if (f_read(&_file, buf, nbyte, &br) != FR_OK) {
@@ -168,22 +168,22 @@ int File::read(void *buf, uint16_t nbyte) {
   return br;
 }
 
-bool File::seek(uint32_t pos) {
+bool XFile::seek(uint32_t pos) {
   activate();
   return f_lseek(&_file, pos) == FR_OK;
 }
 
-uint32_t File::position() {
+uint32_t XFile::position() {
   activate();
   return f_tell(&_file);
 }
 
-uint32_t File::size() {
+uint32_t XFile::size() {
   activate();
   return f_size(&_file);
 }
 
-void File::close() {
+void XFile::close() {
   activate();
   if (!isDirectory()) {
     f_close(&_file);
@@ -194,33 +194,33 @@ void File::close() {
   _opened = false;
 }
 
-File File::openNextFile(uint8_t mode) {
+XFile XFile::openNextFile(uint8_t mode) {
   activate();
   // Check this is a directory and it's open.
   if (!_opened || !isDirectory()) {
-    return File();
+    return XFile();
   }
   // Call f_readdir to read the next file from the directory and return it.
   FILINFO info = {0};
   if (f_readdir(&_directory, &info) != FR_OK) {
     DEBUG_PRINTLN("Error calling f_readdir!");
-    return File();
+    return XFile();
   }
   // Check if we've reached the end of enumeration.
   if (strlen(info.fname) == 0) {
-    return File();
+    return XFile();
   }
   // Construct the path to this file using the directory's path and adding
   // a separateorand the file name.
   char path[MAX_PATH+1] = {0};
   if (!concatPath(_dirPath, info.fname, path)) {
     DEBUG_PRINTLN("Exceeded MAX_PATH trying to create file path!");
-    return File();
+    return XFile();
   }
-  return File(path, mode, _fatfs);
+  return XFile(path, mode, _fatfs);
 }
 
-void File::rewindDirectory() {
+void XFile::rewindDirectory() {
   activate();
   // Use f_readdir with a NULL fno to reset directory enumeration.
   if (f_readdir(&_directory, NULL) != FR_OK) {
@@ -228,7 +228,7 @@ void File::rewindDirectory() {
   }
 }
 
-void File::activate() {
+void XFile::activate() {
   if (_fatfs != NULL) {
     _fatfs->activate();
   }
@@ -245,9 +245,9 @@ bool Adafruit_SPIFlash_FatFs::begin() {
   return true;
 }
 
-File Adafruit_SPIFlash_FatFs::open(const char *filename, uint8_t mode) {
+XFile Adafruit_SPIFlash_FatFs::open(const char *filename, uint8_t mode) {
   activate();
-  return File(filename,  mode, this);
+  return XFile(filename,  mode, this);
 }
 
 bool Adafruit_SPIFlash_FatFs::exists(const char *filepath) {
@@ -297,14 +297,14 @@ bool Adafruit_SPIFlash_FatFs::remove(const char *filepath) {
 bool Adafruit_SPIFlash_FatFs::rmdir(const char *filepath) {
   activate();
   // Check the specified path is a directory and can be opened.
-  File root = open(filepath);
+  XFile root = open(filepath);
   if (!root || !root.isDirectory()) {
     DEBUG_PRINTLN("rmdir was not given a directory!");
     return false;
   }
   // Walk through all the children, deleting if it's a file and traversing
   // down to delete if a subdirectory (depth first search).
-  File child = root.openNextFile();
+  XFile child = root.openNextFile();
   while (child) {
     // Construct full path to the child by concatenating a path separateor
     // and the file name.
