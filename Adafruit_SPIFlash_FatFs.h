@@ -121,6 +121,10 @@ public:
   bool exists(const String &filepath) {
     return exists(filepath.c_str());
   }
+  bool rename(const char *oldPath, const char *newPath);
+  bool rename(const String &oldPath, const String &newPath) {
+    return rename(oldPath.c_str(), newPath.c_str());
+  }
   bool mkdir(const char *filepath);
   bool mkdir(const String &filepath) {
     return mkdir(filepath.c_str());
