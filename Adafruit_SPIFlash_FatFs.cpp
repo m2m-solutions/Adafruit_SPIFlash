@@ -255,6 +255,11 @@ bool Adafruit_SPIFlash_FatFs::exists(const char *filepath) {
   return f_stat(filepath, NULL) == FR_OK;
 }
 
+bool Adafruit_SPIFlash_FatFs::rename(const char *oldPath, const char *newPath) {
+  activate();
+  return f_rename(oldPath, newPath) == FR_OK;
+}
+
 bool Adafruit_SPIFlash_FatFs::mkdir(const char *filepath) {
   activate();
   // Check the path to create can be fit inside a buffer.
